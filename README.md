@@ -332,6 +332,3 @@ Camera / LiDAR
 ---
 
 ---
-- Cartographer
-- Gazebo Classic
-- TurtleBot3
