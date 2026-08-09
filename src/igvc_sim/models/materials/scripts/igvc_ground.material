@@ -1,0 +1,15 @@
+material IGVC/GrassLane
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture igvc_grass_lane_texture.png
+        filtering anisotropic
+        max_anisotropy 16
+      }
+    }
+  }
+}
