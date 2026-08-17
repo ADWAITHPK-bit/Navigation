@@ -1,0 +1,16 @@
+material ground
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+
+      texture_unit
+      {
+        texture ground_black_lanes.png
+        filtering bilinear
+      }
+    }
+  }
+}

@@ -1,0 +1,342 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.7">
+    <model name="base_link">
+        <link name="base_link">
+            <pose>-0.19422215911065605 0.06587307593033147 0.44148718017037836 2.5660543780662435e-15 5.551115123125345e-17 -8.881784197001237e-16</pose>
+            <inertial>
+                <mass>20.125748492371947</mass>
+                <pose>-0.6490520453576459 0.24726853802411974 -0.0479580238563936 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>2.142585604468082</ixx>
+                    <iyy>4.383579065343321</iyy>
+                    <izz>3.865672067630304</izz>
+                    <ixy>-0.018779794988842063</ixy>
+                    <iyz>0.018925346432930774</iyz>
+                    <ixz>0.8230774032066721</ixz>
+                </inertia>
+            </inertial>
+            <visual name="base_link_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/base_link.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="base_link_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/base_link.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="wheel">
+            <pose>-0.1942221591106562 0.07087307593033282 0.44148718017037825 -9.8665930073425e-16 5.551115123125345e-17 -8.881784197001237e-16</pose>
+            <inertial>
+                <mass>0.8423087818519673</mass>
+                <pose>-0.8009477004101847 -0.06174115967205306 -0.3361045526313808 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>0.0029994696816999693</ixx>
+                    <iyy>0.005771364339872107</iyy>
+                    <izz>0.002999469682328817</izz>
+                    <ixy>-3.713957088600412e-15</ixy>
+                    <iyz>1.0918154346371357e-15</iyz>
+                    <ixz>-7.401257338402143e-16</ixz>
+                </inertia>
+            </inertial>
+            <visual name="wheel_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/wheel.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="wheel_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/wheel.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="wheel_2">
+            <pose>-0.1942221591106567 0.5658737697398456 0.44148718017037963 -3.141592653589791 5.55111512312551e-17 -1.7763568394002465e-15</pose>
+            <inertial>
+                <mass>0.8423087818519767</mass>
+                <pose>-0.8009477004101855 -0.06174115967205585 0.3361045526313805 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>0.002999469681699678</ixx>
+                    <iyy>0.005771364339871885</iyy>
+                    <izz>0.002999469682328595</izz>
+                    <ixy>-6.542167721061572e-16</ixy>
+                    <iyz>1.0722482131372327e-15</iyz>
+                    <ixz>9.621703387652402e-16</ixz>
+                </inertia>
+            </inertial>
+            <visual name="wheel_2_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/wheel_2.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="wheel_2_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/wheel_2.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="camera">
+            <pose>-2.9103695377900296 -1.8692234690728244 0.6707944750464168 1.5707963267948968 -2.569523840706928e-15 1.570796326794895</pose>
+            <inertial>
+                <mass>0.23069433704075173</mass>
+                <pose>2.1740944180772237 -0.18611148647242015 1.695381762654436 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>1.57271868148071e-05</ixx>
+                    <iyy>0.00029773022449680977</iyy>
+                    <izz>0.0003079738381624507</izz>
+                    <ixy>3.3005650026264214e-08</ixy>
+                    <iyz>-2.4524010663935657e-07</iyz>
+                    <ixz>1.5995689475798074e-07</ixz>
+                </inertia>
+            </inertial>
+            <visual name="camera_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/camera.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="camera_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/camera.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="depth-camera">
+            <pose>-1.219222159110657 0.34087307593032307 0.7986976465727516 1.5707963267948992 5.551115123125345e-17 -8.881784197001237e-16</pose>
+            <inertial>
+                <mass>0.35325</mass>
+                <pose>0.03499999999998361 0.025000000000006524 0.03499999999998601 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>0.00010008749999995881</ixx>
+                    <iyy>5.298749999993532e-05</iyy>
+                    <izz>0.00010008749999990281</izz>
+                    <ixy>-5.566213072840188e-17</ixy>
+                    <iyz>1.3833198251473266e-17</iyz>
+                    <ixz>2.333508386520535e-19</ixz>
+                </inertia>
+            </inertial>
+            <visual name="depth-camera_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/depth-camera.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="depth-camera_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/depth-camera.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="caster_wheel_1">
+            <pose>-0.1380007687941009 0.07635336072253983 0.17922630628019875 1.167434911886212e-16 -1.42032332300775e-15 1.570796326794898</pose>
+            <inertial>
+                <mass>0.020190100946861016</mass>
+                <pose>0.2349126173509042 0.06327132575045886 -0.13812561324665415 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>1.3842547153745727e-07</ixx>
+                    <iyy>6.066848728730958e-06</iyy>
+                    <izz>6.06684873762744e-06</izz>
+                    <ixy>-5.48527779091419e-17</ixy>
+                    <iyz>2.313250388176255e-18</iyz>
+                    <ixz>2.8817886743409573e-18</ixz>
+                </inertia>
+            </inertial>
+            <visual name="caster_wheel_1_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_1.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="caster_wheel_1_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_1.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="caster_wheel_2">
+            <pose>-0.4260946264434866 0.29831808847279245 0.15274472377757808 9.828924590765956e-13 5.55111512314205e-17 -1.0578724688647875e-15</pose>
+            <inertial>
+                <mass>0.33331056680677573</mass>
+                <pose>0.22466781423758952 0.0175553343622468 -0.06151877573556781 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>0.00019502081882793012</ixx>
+                    <iyy>0.00023452073507137036</iyy>
+                    <izz>0.0004246120757433867</izz>
+                    <ixy>-3.5190940260527904e-17</ixy>
+                    <iyz>2.4100345005914794e-16</iyz>
+                    <ixz>-5.3221089441112546e-17</ixz>
+                </inertia>
+            </inertial>
+            <visual name="caster_wheel_2_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_2.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="caster_wheel_2_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_2.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="caster_wheel_3">
+            <pose>-0.13800076879410086 0.09006552563784245 0.1792263062801988 1.149966174597004e-16 -1.024845247154507e-15 1.570796326794898</pose>
+            <inertial>
+                <mass>0.2322949057076431</mass>
+                <pose>0.22430488989325262 0.06327132575065525 -0.13812561324665415 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>0.0001440960475086535</ixx>
+                    <iyy>7.51329432800826e-05</iyy>
+                    <izz>7.513294327917647e-05</izz>
+                    <ixy>4.361621114818038e-17</ixy>
+                    <iyz>2.787087447639863e-17</iyz>
+                    <ixz>3.703039687489096e-17</ixz>
+                </inertia>
+            </inertial>
+            <visual name="caster_wheel_3_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_3.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="caster_wheel_3_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_3.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <link name="caster_wheel_4">
+            <pose>-0.20440887692129323 0.596053931044919 0.06991147997199945 2.238488911888794e-15 5.5511151231253753e-17 -1.0578724688647875e-15</pose>
+            <inertial>
+                <mass>0.026574060518868955</mass>
+                <pose>0.0029747139805706337 -0.28018050294937047 -0.005526884413733393 0.0 0.0 0.0</pose>
+                <inertia>
+                    <ixx>2.1338433637436368e-05</ixx>
+                    <iyy>8.289083156551514e-06</iyy>
+                    <izz>1.4103345719381363e-05</izz>
+                    <ixy>-9.360094198518332e-18</ixy>
+                    <iyz>-9.680163953506889e-15</iyz>
+                    <ixz>-4.5481810531632894e-09</ixz>
+                </inertia>
+            </inertial>
+            <visual name="caster_wheel_4_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_4.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="caster_wheel_4_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://igvc_vehicle/meshes/caster_wheel_4.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="base_link_Revolute-4" type="revolute">
+            <pose>-0.8009478408893514 -0.0707752302601547 0.33610418017038046 0.0 0.0 0.0</pose>
+            <parent>base_link</parent>
+            <child>wheel_2</child>
+            <axis>
+                <xyz expressed_in="__model__">-0.0 1.0 0.0</xyz>
+            </axis>
+        </joint>
+        <joint name="base_link_Revolute-6" type="revolute">
+            <pose>-0.8009478408893518 -0.05577507593033175 -0.3361041801703792 0.0 0.0 0.0</pose>
+            <parent>base_link</parent>
+            <child>wheel</child>
+            <axis>
+                <xyz expressed_in="__model__">0.0 -1.0 0.0</xyz>
+            </axis>
+        </joint>
+        <joint name="base_link_Rigid-9" type="fixed">
+            <pose>0.22466762644348884 0.01755491152714994 -0.05846672377759599 0.0 0.0 0.0</pose>
+            <parent>base_link</parent>
+            <child>caster_wheel_2</child>
+        </joint>
+        <joint name="caster_wheel_2_Revolute-12" type="revolute">
+            <pose>0.002981876921293556 -0.28018093104492103 0.014712520028000801 0.0 0.0 0.0</pose>
+            <parent>caster_wheel_2</parent>
+            <child>caster_wheel_4</child>
+            <axis>
+                <xyz expressed_in="__model__">0.0 0.0 -1.0</xyz>
+            </axis>
+        </joint>
+        <joint name="caster_wheel_4_Revolute-13" type="revolute">
+            <pose>0.2130596392774617 0.0632712312058999 -0.1381253062801994 0.0 0.0 0.0</pose>
+            <parent>caster_wheel_4</parent>
+            <child>caster_wheel_1</child>
+            <axis>
+                <xyz expressed_in="__model__">-0.0 1.0 0.0</xyz>
+            </axis>
+        </joint>
+        <joint name="caster_wheel_1_Revolute-14" type="revolute">
+            <pose>0.22120047436215914 0.0632712312059 -0.13812530628019942 0.0 0.0 0.0</pose>
+            <parent>caster_wheel_1</parent>
+            <child>caster_wheel_3</child>
+            <axis>
+                <xyz expressed_in="__model__">0.0 -1.0 -0.0</xyz>
+            </axis>
+        </joint>
+        <joint name="base_link_Rigid-15" type="fixed">
+            <pose>0.03500015911065717 3.5342724844750824e-07 0.03500007593032337 0.0 0.0 0.0</pose>
+            <parent>base_link</parent>
+            <child>depth-camera</child>
+        </joint>
+        <joint name="base_link_Revolute-16" type="revolute">
+            <pose>2.078991469072848 -0.18595347504642912 1.6961475377900466 0.0 0.0 0.0</pose>
+            <parent>base_link</parent>
+            <child>camera</child>
+            <axis>
+                <xyz expressed_in="__model__">-0.0 1.0 0.0</xyz>
+            </axis>
+        </joint>
+    </model>
+</sdf>

@@ -1,0 +1,30 @@
+# ROS 2 / colcon generated files
+**/build/
+**/install/
+**/log/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# VS Code
+.vscode/
+
+# ROS / Python temporary files
+*.swp
+*.swo
+
+# Colcon generated files
+.colcon/
+compile_commands.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated visualization files
+*.gv
+*.pdf
+src/fusioncore/
+*.backup

@@ -1,0 +1,28 @@
+
+controller_server:
+  ros__parameters:
+    use_sim_time: true
+    controller_frequency: 10.0
+
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker" # C++ plugin class that monitors minimum required robot displacement over time
+      required_movement_radius: 0.3 #
+      movement_time_allowance: 10.0
+
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker" # Standard Nav2 C++ plugin class that checks distance and rotation tolerances at the destination
+      xy_goal_tolerance: 0.2 # How close (in meters) the center of the robot must be to the goal position to consider it reached (20 cm)
+      yaw_goal_tolerance: 0.2 # How close (in radians) the robot's heading must be to the target orientation (approx. 11.5 degrees)
+
+    FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController" # C++ path tracking controller class designed specifically for differential and ackermann robots
+      desired_linear_vel: 0.3 # Target straight-line driving speed for the robot in meters per second (0.3 m/s)
+      lookahead_dist: 0.5 # Base distance (in meters) along the path that the controller looks ahead to calculate steering angles
+      min_lookahead_dist: 0.3 # Absolute lower limit (in meters) for adaptive lookahead distance when driving slowly or making sharp turns
+      max_lookahead_dist: 1.0 # Absolute upper limit (in meters) for adaptive lookahead distance when driving at higher speeds
+      max_angular_accel: 1.5
+      transform_tolerance: 0.5

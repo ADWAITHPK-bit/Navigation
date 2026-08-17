@@ -1,0 +1,79 @@
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom # odom provides continous smooth plan
+      robot_base_frame: base_link # frame attatched to the physical center of the robot
+      use_sim_time: True
+      transform_tolerance: 0.3 # maximum allowable delay in the message transfer
+      rolling_window: true
+      width: 6 # width of the local costmap
+      height: 6 #
+      resolution: 0.05
+      robot_radius: 0.22 # turning radius of the robot
+      plugins: ["voxel_layer", "inflation_layer"] # List of active costmap processing layers to load in execution order
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer" # Specifies C++ plugin class for expanding obstacles to prevent tight collisions
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.30 #
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer" # # Specifies C++ plugin class for 3D grid cell obstacle tracking
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.20 #
+          obstacle_max_range: 3.0
+          obstacle_min_range: 0.20 #
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+      always_send_full_costmap: True
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: True
+      transform_tolerance: 0.3
+      robot_radius: 0.22
+      resolution: 0.05
+      track_unknown_space: true
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer" # C++ plugin class for tracking dynamic 2D sensor obstacles on top of static map
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.20 # Min distance (in meters) to raytrace clear space (filters robot self-reflections)
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.20
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer" # C++ plugin class for tracking dynamic 2D sensor obstacles on top of static map
+        map_subscribe_transient_local: True
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer" # C++ plugin class for importing baseline occupancy grid from map server
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+      always_send_full_costmap: True

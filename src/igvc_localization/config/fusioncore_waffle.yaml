@@ -1,0 +1,363 @@
+fusioncore:
+  ros__parameters:
+    base_frame: base_link
+    odom_frame: odom
+    publish_rate: 100.0
+
+    # Force 2D output: zeroes position.z, velocity.z, and the TF translation.z.
+    # For ground robots where altitude is irrelevant (lawn mowers, AGVs, vacuums).
+    # Prevents GPS altitude noise or IMU Z drift from shifting the costmap plane.
+    # Orientation (roll/pitch) is untouched.
+    # Leave false for any robot that actually moves in 3D (drones, arms, boats).
+    publish.force_2d: false
+
+    # Broadcast the odom -> base_link TF transform.
+    # Set to false if another node already owns this transform.
+    publish.tf: false
+
+    # ── IMU ──────────────────────────────────────────────────────────────────
+
+    # Primary IMU topic. Equivalent to a launch-time remap.
+    # Common: OAK-D: /imu   Realsense: /camera/imu   Clearpath: /sensors/imu_0/data
+    imu.topic: "/imu"
+    imu.gyro_noise: 0.005      # rad/s: 1-sigma per axis
+    imu.accel_noise: 0.1       # m/s²: 1-sigma per axis
+
+    # Set true if IMU has magnetometer (9-axis: BNO08x, VectorNav, Xsens).
+    # false (default): 6-axis gyro+accel only. Yaw from integration, drifts over time.
+    # true: 9-axis. Fuses roll, pitch, AND yaw. Validates heading immediately on startup.
+    imu.has_magnetometer: false
+
+    # Set true ONLY if your IMU driver already removed gravity (publishes ~0 m/s² at rest).
+    # false (default): driver publishes raw specific force (~9.81 m/s² upward at rest).
+    # Check: ros2 topic echo /imu/data --field linear_acceleration.z --once
+    #   ~9.8 → leave false.   ~0.0 → set true.
+    imu.remove_gravitational_acceleration: false
+
+    # Override the IMU TF frame. Leave empty to use msg->header.frame_id.
+    # Set only if your driver publishes with an empty frame_id.
+    imu.frame_id: ""
+
+    # IMU lever arm: offset from base_link to the IMU sensing point in body frame.
+    # x=forward, y=left, z=up (meters). Leave at 0.0 to auto-resolve from TF
+    # (base_frame -> imu_frame via URDF). Set non-zero to override the TF value.
+    # Corrects the centripetal acceleration ω×(ω×r) that appears when the IMU
+    # is not at the rotation center. Significant when |r| > 0.1 m and |ω| > 0.3 rad/s.
+    imu.lever_arm_x: 0.0
+    imu.lever_arm_y: 0.0
+    imu.lever_arm_z: 0.0
+
+    # Optional second IMU source. Leave empty to disable.
+    imu2.topic: ""
+    imu2.frame_id: ""
+    imu2.remove_gravitational_acceleration: false
+
+    # ── Wheel encoder ─────────────────────────────────────────────────────────
+
+    # Primary wheel odometry topic (nav_msgs/Odometry; the twist is what gets fused).
+    # The default is intentionally not /odom: FusionCore publishes its own fused
+    # odometry, so subscribing to /odom would invite a loop with its own output.
+    # Point this at your driver's topic (/odom, /diff_drive_controller/odom, ...).
+    encoder.topic: "/odom"
+    encoder.vel_noise: 0.05    # m/s: 1-sigma forward velocity noise
+    encoder.yaw_noise: 0.02    # rad/s: 1-sigma angular velocity noise
+
+    # Lateral velocity non-holonomic constraint (m/s sigma).
+    # 0.05 (default): differential drive. Robot cannot move sideways.
+    # 10.0+: disable for mecanum/omnidirectional robots.
+    # 0.3-1.0: Ackermann or slippery surfaces with real lateral slip.
+    encoder.nhc_vy_sigma: 0.05
+
+    # Auto-detect holonomic robots at runtime.
+    # After 5 consecutive messages with |VY| > 0.02 m/s, disables the VY=0 constraint.
+    encoder.nhc_auto_detect: true
+
+    # Optional second encoder/velocity source (e.g. KISS-ICP LiDAR odometry).
+    # Does not drive ZUPT or ground-constraint updates. Leave empty to disable.
+    encoder2.topic: ""
+    encoder2.vel_noise: 0.05   # m/s: fallback when message covariance is zero
+    encoder2.yaw_noise: 0.02   # rad/s: fallback when message covariance is zero
+
+    # ── GNSS position ─────────────────────────────────────────────────────────
+
+    # Primary GNSS fix topic. Read as sensor_msgs/NavSatFix, or gps_msgs/GPSFix
+    # when gnss.use_gps_fix is true. Set this to your driver's topic
+    # (/fix, /ublox/fix, /gps/fix, ...) instead of writing a launch remap.
+    gnss.fix_topic: "/gnss/fix"
+
+    gnss.base_noise_xy: 1.0    # meters: base position noise sigma, scaled by HDOP
+    gnss.base_noise_z: 2.0     # meters: altitude noise sigma, scaled by VDOP
+    gnss.heading_noise: 0.02   # radians: dual-antenna heading noise sigma
+    # Quality gate. TWO pairs, and only one of them applies to your receiver.
+    #
+    # sensor_msgs/NavSatFix carries no DOP, so FusionCore reads the reported
+    # position covariance and gates on METRES of one sigma. That is the usual
+    # case, and max_hdop/max_vdop below never fire at all.
+    gnss.max_sigma_xy: 25.0    # m of horizontal 1-sigma. A standalone receiver
+    gnss.max_sigma_z: 50.0     # reports 2-8 m horizontal and 10-25 m vertical in
+                               # normal conditions, so these are deliberately loose:
+                               # the chi2 test is the real outlier defence, and a
+                               # gate in absolute metres cannot tell a broken fix
+                               # from ordinary noise. Values that merely look strict
+                               # silently veto working GPS.
+    #
+    # These two are dimensionless DOP and apply ONLY when the fix carries no
+    # covariance, i.e. gps_msgs/GPSFix reporting receiver-native DOP.
+    gnss.max_hdop: 4.0
+    gnss.max_vdop: 6.0
+    gnss.min_satellites: 4     # minimum satellites required
+    # 1=GPS, 2=DGPS, 3=RTK_FLOAT, 4=RTK_FIXED
+    # Note: sensor_msgs/NavSatFix cannot express RTK_FLOAT (status 2 = RTK_FIXED).
+    # Use gnss.use_gps_fix: true to access RTK_FLOAT via gps_msgs/GPSFix.
+    gnss.min_fix_type: 1
+    
+    # Subscribe as gps_msgs/GPSFix instead of sensor_msgs/NavSatFix.
+    # Enables RTK_FLOAT status, receiver-native hdop/vdop, and satellites_used.
+    # Required when your receiver publishes RTK_FLOAT (u-blox in GPSFix mode).
+    gnss.use_gps_fix: false
+
+    # GPS velocity topic: fuse horizontal speed from GPS Doppler independently.
+    # Expects nav_msgs/Odometry with velocity in ENU frame (linear.x=east, linear.y=north).
+    # Reveals wheel slip when GPS speed disagrees with encoder speed.
+    # Leave empty to disable.
+    gnss.velocity_topic: ""
+
+    # Antenna lever arm: offset from base_link to primary GNSS antenna in body frame.
+    # x=forward, y=left, z=up (meters). Leave at 0.0 to auto-resolve from TF
+    # (base_frame -> GNSS msg frame_id via URDF); set non-zero to override.
+    # Applied when heading is validated AND heading_sigma < lever_arm_max_heading_sigma_deg,
+    # OR when gnss.apply_lever_arm_pre_heading is true.
+    gnss.lever_arm_x: 0.0
+    gnss.lever_arm_y: 0.0
+    gnss.lever_arm_z: 0.0
+
+    # When true, applies the GNSS lever arm from the very first fix instead of waiting
+    # for heading validation. Turns GPS position into an active yaw correction from startup.
+    # Safe with Mahalanobis gating on and RTK-grade fixes. Off by default.
+    gnss.apply_lever_arm_pre_heading: false
+
+    # Optional second GNSS receiver. Leave empty to disable.
+    gnss.fix2_topic: ""
+    gnss.lever_arm2_x: 0.0
+    gnss.lever_arm2_y: 0.0
+    gnss.lever_arm2_z: 0.0
+
+    # Dual antenna GNSS heading topic (sensor_msgs/Imu carrying yaw).
+    # Used with receivers that output heading as a separate IMU-style message
+    # (u-blox F9H, Septentrio dual-antenna). Validates heading immediately at startup.
+    # Leave empty to disable.
+    gnss.heading_topic: ""
+
+    # compass_msgs/Azimuth heading topic (REP-145 standard).
+    # Preferred over gnss.heading_topic when your receiver supports it.
+    # Leave empty to disable.
+    gnss.azimuth_topic: ""
+
+    # ── GPS track heading ─────────────────────────────────────────────────────
+    # Fuses heading from GPS displacement geometry: the bearing between two GPS fixes
+    # separated by enough distance gives a heading measurement without a magnetometer.
+    # Same mechanism as navsat_transform uses in robot_localization.
+
+    gnss.track_heading_enabled: true
+    gnss.track_heading_min_dist: 5.0     # meters: minimum displacement baseline per fusion
+    gnss.track_heading_max_sigma: 0.4    # radians (~23 deg): skip fusion if GPS noise is too high
+
+    # Minimum robot speed (m/s) for GPS displacement steps to count toward heading observability.
+    # Below this threshold: could be GPS jitter or vibration, not real forward motion.
+    # Increase on high-vibration platforms (construction equipment, tracked robots).
+    gnss.track_heading_min_speed: 0.2    # m/s
+
+    # Maximum yaw rate (rad/s) for GPS displacement steps to count.
+    # During fast turns the bearing changes too quickly to give a reliable heading measurement.
+    # Decrease for robots that make tight turns at slow speed (delivery robots in corridors).
+    gnss.track_heading_max_yaw_rate: 0.3  # rad/s (~17 deg/s)
+
+    # ── GPS inertial coast mode ───────────────────────────────────────────────
+    # When GPS repeatedly fails or goes silent, coast mode inflates process noise
+    # so the chi2 gate naturally relaxes and accepts returning GPS fixes after the blackout.
+
+    # Enter coast mode after this many consecutive GPS rejections. 0 = disabled.
+    gnss.coast_n: 5
+    # Position Q multiplier during coast (inflates P so returning fixes pass chi2).
+    gnss.coast_q_factor: 20.0
+    # Gyro bias Q multiplier during coast (loosens bias estimate so encoder WZ can correct it).
+    gnss.coast_q_bias_factor: 100.0
+    # R_imu[WZ] multiplier during coast. Increases encoder WZ influence on heading rate.
+    # 1.0 = disabled (default). Set 200-1000 for outdoor robots with long GPS blackouts.
+    gnss.coast_imu_wz_scale: 1.0
+    # Also enter coast mode after this many seconds of GPS silence (receiver went quiet).
+    # 0.0 = disabled. Set 30.0 for tunnels, underground, or power-loss scenarios.
+    gnss.coast_timeout_s: 0.0
+
+    # After this many consecutive rejections, inflate P[x,x]/P[y,y] directly to break
+    # the cascade where all returning fixes fail chi2. Fires exactly once. 0 = disabled.
+    gnss.recovery_rejection_n: 0
+    # XY sigma for direct P inflation (meters). 50m covers any realistic dead-reckoning drift.
+    gnss.p_inflate_sigma: 50.0
+    # Minimum GPS absence (seconds) before entering recovery mode (bypass gate for first
+    # returning fix). Must be >= coast_timeout_s. 0.0 = enter recovery at same time as coast.
+    gnss.recovery_timeout_s: 0.0
+
+    # ── Lever arm heading gating ──────────────────────────────────────────────
+    # Lever arm correction is only applied when heading is validated AND
+    # heading uncertainty is below this threshold. When heading degrades during
+    # prolonged turns, rotating the lever arm by an uncertain heading adds error.
+    # Rule of thumb: lever_arm_m * sin(threshold_rad) < GPS noise sigma.
+    # Default 20 deg: disables lever arm during tight-turn sections, leaves it active
+    # during straight/gentle-curve driving where it genuinely helps.
+    gnss.lever_arm_max_heading_sigma_deg: 20.0
+
+    # ── Raw magnetometer heading ──────────────────────────────────────────────
+    # Fuses heading from a raw 3-axis magnetometer (sensor_msgs/MagneticField).
+    # Applies hard/soft iron correction and tilt compensation using the current
+    # filter roll/pitch. Useful for GPS-denied indoor/outdoor environments where
+    # a compass can provide heading when GPS track heading is unavailable.
+    # Set enabled: true and topic to your magnetometer topic.
+
+    magnetometer.enabled: false
+    magnetometer.topic: "/imu/mag"
+
+    # Heading noise standard deviation (radians). 0.05 rad (~3 deg) is typical for
+    # a well-calibrated sensor in a benign magnetic environment.
+    # Loosen to 0.15-0.3 near motors or in environments with variable magnetic fields.
+    magnetometer.noise_rad: 0.05
+
+    # Chi-squared gate: chi2(1, 0.99) = 9.21 (1-DOF heading measurement).
+    magnetometer.chi2_threshold: 9.21
+
+    # Magnetic declination (radians): offset between magnetic north and true north.
+    # Positive east. Look up at https://www.magnetic-declination.com
+    # Leave at 0.0 if you are using GPS track heading to anchor the filter: the
+    # constant offset is absorbed over time.
+    magnetometer.declination_rad: 0.0
+
+    # Hard iron correction (Tesla): constant bias offset in body frame.
+    # Calibrate using imu_calib or by rotating the sensor through a full circle.
+    # Format: [x, y, z]
+    magnetometer.hard_iron: [0.0, 0.0, 0.0]
+
+    # Soft iron correction matrix (3x3, row-major). Identity = disabled.
+    # Calibrate using imu_calib or magneto alongside hard iron.
+    # Format: [r00, r01, r02, r10, r11, r12, r20, r21, r22]
+    magnetometer.soft_iron: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+
+    # ── Radar Doppler velocity ────────────────────────────────────────────────
+    # Fuses ego-velocity from a 4D imaging radar. Works indoors and in all weather.
+    # Expects nav_msgs/Odometry with velocity in body frame (linear.x=forward, linear.y=lateral).
+    # Leave empty to disable.
+    radar.velocity_topic: ""
+    radar.vel_noise: 0.1       # m/s: fallback when message covariance is zero
+
+    # ── VSLAM ─────────────────────────────────────────────────────────────────
+    # Fuses 6-DOF pose from visual SLAM (ORB-SLAM3, RTAB-Map, Kimera).
+    # Expects nav_msgs/Odometry. Pose used; twist ignored. Leave empty to disable.
+    vslam.topic: ""
+    vslam.position_noise: 0.1       # meters: fallback when message covariance is zero
+    vslam.orientation_noise: 0.02   # radians: fallback when message covariance is zero
+    # Override the VSLAM TF frame. Leave empty to use message frame_id.
+    vslam.frame_id: ""
+    # Re-anchor VSLAM map origin after this many consecutive gate rejections.
+    # Handles ORB-SLAM3 reinitialization (discontinuous pose jump after tracking loss).
+    vslam.reinit_n: 10
+
+    # ── Outlier rejection ─────────────────────────────────────────────────────
+    # Mahalanobis chi-squared gating. Rejects GPS jumps, encoder spikes, heading outliers.
+    # Thresholds are chi2 percentiles at 99.9%. Do not lower below these values:
+    # normal sensor noise will trip the gate and measurements will be permanently rejected.
+    outlier_rejection: true
+    outlier_threshold_gnss: 16.27   # chi2(3, 0.999): 3D GPS position
+    outlier_threshold_imu:  15.09   # chi2(6, 0.999): 6D raw IMU (gyro + accel)
+    outlier_threshold_enc:  11.34   # chi2(3, 0.999): 3D encoder velocity
+    outlier_threshold_hdg:  10.83   # chi2(1, 0.999): 1D heading
+    outlier_threshold_vslam: 22.46  # chi2(6, 0.999): 6D VSLAM pose
+
+    # ── Non-holonomic ground constraints ──────────────────────────────────────
+    # Fuses VZ=0, AZ=0, and optionally Z=0 as pseudo-measurements every encoder callback.
+    # Prevents altitude drift and gravity-constant leakage on wheeled ground robots.
+
+    # Body-frame vertical velocity constraint (m/s sigma).
+    # 0.1 (default): flat floors and mild terrain.
+    # 0.3-1.0: robots traversing curbs, rocks, or rough outdoor paths.
+    ground_constraint.vz_sigma: 0.1
+
+    # Body-frame vertical acceleration constraint (m/s² sigma).
+    # 0.5 (default): loose enough for bumps, tight enough to stop gravity drift.
+    # 2.0+: aggressive terrain with real vertical accelerations.
+    ground_constraint.az_sigma: 0.5
+
+    # Flat-terrain Z position constraint (meters sigma). 0.0 = disabled.
+    # Set ~0.3 for known-flat deployments (campus, parking lot, warehouse floor)
+    # where GPS altitude noise causes Z oscillation. Leave 0.0 for variable terrain.
+    ground_constraint.z_position_sigma: 0.0
+
+    # ── Zero-velocity updates (ZUPT) ──────────────────────────────────────────
+    # When encoder speed and angular rate are both below threshold, fuse velocity=0.
+    # Prevents IMU drift from accumulating during standstill.
+    zupt.enabled: true
+    zupt.velocity_threshold: 0.05   # m/s: below this = stationary
+    zupt.angular_threshold:  0.05   # rad/s: below this = not rotating
+    zupt.noise_sigma: 0.01          # m/s: tighter = stronger zero-velocity correction
+
+    # ── Adaptive noise covariance ─────────────────────────────────────────────
+    # Tracks innovation windows and estimates true sensor noise from data.
+    # After a few minutes, R matrices converge to real sensor characteristics automatically.
+    adaptive.imu:              true
+    adaptive.encoder:          true
+    adaptive.gnss:             true
+    adaptive.ground_constraint: true  # VZ=0 and AZ=0 constraints adapt to terrain
+    adaptive.window: 50              # sliding window size (50 = ~0.5s at 100Hz IMU)
+    adaptive.alpha:  0.01            # learning rate (0.01 = slow, stable)
+
+    # ── UKF process noise ─────────────────────────────────────────────────────
+    # These are per-step noise values (not spectral density, not scaled by dt).
+    # Tune if position drifts faster than expected between GPS fixes (increase q_position)
+    # or if the filter reacts too sluggishly to real motion (increase q_velocity).
+    ukf.q_position:       0.01    # m²/step: position drift between updates
+    ukf.q_orientation:    1.0e-9  # quaternion regularization only (keep very small)
+    ukf.q_velocity:       0.1     # (m/s)²/step: velocity drift
+    ukf.q_angular_vel:    0.1     # (rad/s)²/step: angular velocity drift
+    ukf.q_acceleration:   1.0     # (m/s²)²/step: acceleration drift
+    ukf.q_gyro_bias:      1.0e-5  # (rad/s)²/step: gyro bias drift (slow MEMS changes)
+    ukf.q_accel_bias:     1.0e-5  # (m/s²)²/step: accel bias drift
+    ukf.q_encoder_wz_bias: 1.0e-7 # (rad/s)²/step: encoder WZ bias drift (mechanical: very slow)
+
+    # ── Motion model ──────────────────────────────────────────────────────────
+    # Controls how sigma points are propagated during the predict step.
+    # ConstantVelocityAcceleration: no lateral constraint (default, works for all robots)
+    # DifferentialDrive: zeros VY each predict step (tighter for diff-drive, skid-steer)
+    # Ackermann: same lateral constraint with wheelbase stored for future extensions
+    motion_model: "ConstantVelocityAcceleration"
+    motion_model_params.wheelbase: 0.55   # meters: used by Ackermann model only
+
+    # ── Sensor wait ───────────────────────────────────────────────────────────
+    # Hold filter initialization until all configured sensors have published at least once.
+    # Prevents the startup drift that occurs when the filter begins on IMU alone
+    # and GPS/encoder arrive a few seconds later. Replaces the sleep(3) workaround.
+    init.wait_for_all_sensors: false
+    init.sensor_wait_timeout: 10.0  # seconds: give up and start anyway after this
+
+    # Static bias initialization window (seconds). 0.0 = disabled.
+    # When > 0, the filter collects IMU data for this duration before starting,
+    # estimates gyro and accel bias from the mean, and initializes with correct values.
+    # Robot MUST be stationary. Falls back to zero bias if robot moves during window.
+    # Recommended: 2.0 seconds. Reduces startup position drift from ~10cm to <1cm.
+    init.stationary_window: 0.0
+
+    # ── PROJ coordinate reference ─────────────────────────────────────────────
+    # input.gnss_crs: CRS of incoming NavSatFix messages (default: WGS84 lat/lon)
+    # output.crs: internal computation CRS (default: ECEF XYZ, globally valid)
+    # output.convert_to_enu_at_reference: required when output.crs is ECEF
+    # reference.use_first_fix: anchor local ENU origin to the first GPS fix received
+    input.gnss_crs: "EPSG:4326"
+    output.crs: "EPSG:4978"
+    output.convert_to_enu_at_reference: true
+    reference.use_first_fix: true
+    reference.x: 0.0
+    reference.y: 0.0
+    reference.z: 0.0
+
+    # ── Deterministic replay ──────────────────────────────────────────────────
+    # Save/load full 23-state + covariance for deterministic bag replay.
+    # ros2 service call /fusioncore/save_checkpoint std_srvs/srv/Trigger
+    # ros2 service call /fusioncore/load_checkpoint std_srvs/srv/Trigger
+    replay.checkpoint_path: "/tmp/fusioncore_checkpoint.txt"
